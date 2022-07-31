@@ -228,6 +228,65 @@ public class flashingnonsense : MonoBehaviour
         }
         renderers[index].material.color = end;
         why[index].color = end;
-
     }
+	
+	//twitch plays
+    #pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"To press a button (in reading order) at a certain time, use !{0} press [1-16] at [00-59]";
+    #pragma warning restore 414
+    
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+		string[] parameters = command.Split(' ');
+		
+		if (Regex.IsMatch(parameters[0], @"^\s*press\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && (Regex.IsMatch(parameters[2], @"^\s*at\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)))
+        {
+			yield return null;
+			
+			if (parameters.Length != 4)
+			{
+				yield return "sendtochaterror Parameter length invalid. Command ignored.";
+				yield break;
+			}
+			
+			int Out;
+			if (!int.TryParse(parameters[1], out Out))
+			{
+				yield return "sendtochaterror The button number given is not valid. Command ignored.";
+				yield break;
+			}
+			
+			if (Out < 1 || Out > 16)
+			{
+				yield return "sendtochaterror The button number given is not 1-16. Command ignored.";
+				yield break;
+			}
+			
+			int Out2;
+			if (!int.TryParse(parameters[3], out Out2))
+			{
+				yield return "sendtochaterror The timer number given is not valid. Command ignored.";
+				yield break;
+			}
+			
+			if (Out2 < 0 || Out2 > 59)
+			{
+				yield return "sendtochaterror The timer number given is not 00-59. Command ignored.";
+				yield break;
+			}
+			
+			if (parameters[3].Length != 2)
+			{
+				yield return "sendtochaterror The timer length must be 2. Command ignored.";
+				yield break;
+			}
+			
+			while (((int)Bomb.GetTime()) % 60 != Out2)
+			{
+				 yield return "trycancel The command is cancelled due to a cancel request.";
+			}
+			
+			Buttons[Out-1].OnInteract();
+		}
+	}
 }
